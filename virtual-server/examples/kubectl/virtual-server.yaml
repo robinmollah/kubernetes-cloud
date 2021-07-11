@@ -2,11 +2,11 @@ apiVersion: virtualservers.coreweave.com/v1alpha1
 kind: VirtualServer
 metadata:
   name: example-vs
-  namespace: my-namespace
+  namespace: tenant-seagull
 spec:
   region: ORD1
   os:
-    type: linux
+    type: windows
   resources:
     gpu:
       type: Quadro_RTX_4000
@@ -16,15 +16,15 @@ spec:
     memory: 16Gi
   storage:
     root:
-      size: 40Gi
-      storageClassName: ceph-ssd-2-replica
+      size: 80Gi
+      storageClassName: block-nvme-ord1
       source:
         pvc:
           namespace: vd-images
-          name: ubuntu2004-docker-master-20210323-ord1
-#  users:
-#    - username: SET YOUR USERNAME HERE
-#      password: SET YOUR PASSWORD HERE
+          name: win10-master-20210605-ord1
+  users:
+    - username: coreweave
+      password: FineFineFine
   network:
     public: true
     tcp:

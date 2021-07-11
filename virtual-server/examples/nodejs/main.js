@@ -1,5 +1,6 @@
 const VSClient = require("./client.js")
 const { newVirtualServerManifest } = require("./util.js")
+require('dotenv').config();
 
 const namespace = process.env.NAMESPACE
 const kubeconfig = process.env.KUBECONFIG
@@ -20,59 +21,7 @@ const virtualServerManifest = newVirtualServerManifest({
   namespace,
 })
 // Configure a sample spec
-virtualServerManifest.spec = {
-  region: "ORD1",
-  os: {
-    type: "linux"
-  },
-  resources: {
-    gpu: {
-      type: "Quadro_RTX_4000",
-      count: 1
-    },
-    cpu: {
-      count: 3
-    },
-    memory: "16Gi"
-  },
-  storage: {
-    root: {
-      size: "40Gi",
-      storageClassName: "ceph-ssd-2-replica",
-      source: {
-        pvc: {
-          namespace: "vd-images",
-          name: "ubuntu2004-docker-master-20210323-ord1"
-        }
-      }
-    }
-  },
-  users: [
-    {
-      username,
-      password
-    }
-  ],
-  network: {
-    public: true,
-    tcp: {
-      ports: [
-        22,
-        443,
-        60443,
-        4172,
-        3389,
-      ]
-    },
-    udp: {
-      ports: [
-        4172,
-        3389
-      ]
-    }
-  }
-}
-
+virtualServerManifest.spec = require("./vs-config");
 const main = async() => {
   // Create and initialize a new VirtualServer client
   // Path to kube config may be null, in which case the default ~/.kube kubeconfig location will be used
@@ -88,7 +37,7 @@ const main = async() => {
   await client.virtualServer.create(virtualServerManifest)
     .then(o => o.statusCode === 201 && console.log("VS created"))
     .catch(err => console.log(err.toString()))
-  
+
   console.log("Waiting for VS ready state")
 
   // Wait until the VirtualServer is ready
@@ -107,9 +56,9 @@ const main = async() => {
         console.log("VS started")
       }
     })
-    .catch(err => err.statusCode === 404 ? console.log("Waiting for subresource API") : console.log(err.toString())) 
+    .catch(err => err.statusCode === 404 ? console.log("Waiting for subresource API") : console.log(err.toString()))
   }
-  
+
   // Get the VirtualServer we created
   const vs = await client.virtualServer.get({name: "sample-virtual-server", namespace})
   .then(o => {
@@ -128,7 +77,7 @@ const main = async() => {
     FloatingIPs:
     \t${Object.entries(floatingIPs).map(([svc, ip]) => `${svc}: ${ip}`).join("\n\t")}
   `)
-  /* 
+  /*
   Sample Output:
     InternalIP: 1.2.3.4
     ExternalIP: 0.0.0.0
@@ -137,9 +86,9 @@ const main = async() => {
   */
 
   // Stop the VirtualServer
-  await client.virtualServer.stop({name: "sample-virtual-server", namespace})
-  .then(o => o.statusCode === 202 && console.log("VS stopped"))
-  .catch(err => console.log(err.toString()))
+  // await client.virtualServer.stop({name: "sample-virtual-server", namespace})
+  // .then(o => o.statusCode === 202 && console.log("VS stopped"))
+  // .catch(err => console.log(err.toString()))
 }
-  
+
 main()

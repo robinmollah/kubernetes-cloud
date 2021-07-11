@@ -9,6 +9,7 @@
   "author": "Yitzy Dier",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^10.0.0",
     "kubernetes-client": "^9.0.0"
   }
 }
